@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Yalan mı, Gerçek mi?</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      text-align: center;
+      padding-top: 50px;
+    }
+    .question {
+      font-size: 24px;
+      margin: 20px;
+    }
+    button {
+      padding: 15px 30px;
+      font-size: 18px;
+      margin: 10px;
+      cursor: pointer;
+      border-radius: 10px;
+      border: none;
+    }
+    .true { background-color: #4CAF50; }
+    .false { background-color: #F44336; }
+    #score { margin-top: 20px; font-size: 20px; }
+  </style>
+</head>
+<body>
+  <h1>🧠 Yalan mı, Gerçek mi?</h1>
+  <div>
+    <input type="text" id="username" placeholder="Adınızı yazın" style="padding: 10px; font-size: 16px;">
+  </div>
+  <div class="question" id="question">Sorular yükleniyor...</div>
+  <button class="true" onclick="cevapVer(true)">Gerçek</button>
+  <button class="false" onclick="cevapVer(false)">Yalan</button>
+  <div id="score"></div>
+
+  <script>
+    const webhookURL = "https://discord.com/api/webhooks/1372255034192039956/LlBxNb6_pdViM4sMtXhzRh8WW_FcmHr2KpTZm6Oy2S257P5bsZYVUW0LeAWo2SM4VQ0w"; // ← Webhook'un buraya
+    const sorular = [
+  { soru: "Recep Tayyip Erdoğan 1954 doğumludur.", cevap: true },
+  { soru: "Mustafa Kemal Atatürk 1881 doğumludur.", cevap: true },
+  { soru: "Atatürk, Türkiye Cumhuriyeti'nin kurucusudur.", cevap: true },
+  { soru: "Recep Tayyip Erdoğan, Türkiye Cumhurbaşkanıdır.", cevap: true },
+  { soru: "Birleşmiş Milletler 1945 yılında kurulmuştur.", cevap: true },
+  { soru: "Sovyetler Birliği 1991 yılında çökmüştür.", cevap: true },
+  { soru: "ABD'nin ilk başkanı George Washington'dur.", cevap: true },
+  { soru: "Fransa'nın başkanı Emmanuel Macron'dur.", cevap: true },
+  { soru: "Vladimir Putin, Rusya'nın başkanıdır.", cevap: true },
+  { soru: "Angela Merkel Almanya'nın ilk kadın başkanıdır.", cevap: true },
+  { soru: "Boris Johnson, Birleşik Krallık başbakanıdır.", cevap: true },
+  { soru: "Recep Tayyip Erdoğan, AKP'nin kurucusudur.", cevap: true },
+  { soru: "Mustafa Kemal Atatürk, 10 Kasım 1938'de vefat etmiştir.", cevap: true },
+  { soru: "Fransa'nın başkenti Berlin'dir.", cevap: false },
+  { soru: "Mısır'ın başkanı Muhammed Mursi'dir.", cevap: false },
+  { soru: "Türkiye'nin ilk kadın başbakanı Tansu Çiller'dir.", cevap: true },
+  { soru: "Yunanistan, Avrupa Birliği'ne 2004 yılında katılmıştır.", cevap: false },
+  { soru: "Birleşik Krallık, Avrupa Birliği'nden 2016 yılında çıkma kararı almıştır.", cevap: true },
+  { soru: "Büyük Britanya'da 2016 yılında Brexit referandumu yapılmıştır.", cevap: true },
+  { soru: "Donald Trump, ABD'nin 45. başkanıdır.", cevap: true },
+];
+
+
+    let skor = 0;
+    let index = 0;
+    let secilenSorular = [];
+
+    function rastgeleSorular() {
+      const kopya = [...sorular];
+      for (let i = 0; i < 5; i++) {
+        const sec = Math.floor(Math.random() * kopya.length);
+        secilenSorular.push(kopya[sec]);
+        kopya.splice(sec, 1);
+      }
+      yeniSoru();
+    }
+
+    function yeniSoru() {
+      if (index < secilenSorular.length) {
+        document.getElementById("question").innerText = secilenSorular[index].soru;
+      } else {
+        document.getElementById("question").innerText = "🎉 Oyun Bitti! Toplam Doğru: " + skor;
+        document.getElementById("score").innerText = "";
+      }
+    }
+
+    function cevapVer(cevap) {
+      const kullanici = document.getElementById("username").value.trim();
+      if (!kullanici) return alert("Lütfen isminizi girin!");
+
+      const soru = secilenSorular[index];
+      const dogruMu = cevap === soru.cevap;
+      if (dogruMu) skor++;
+
+      // Discord'a mesaj gönder
+      const mesaj = {
+  embeds: [
+    {
+      title: "🧠 Yalan mı, Gerçek mi? Cevap Geldi!",
+      color: dogruMu ? 0x57F287 : 0xED4245, // Yeşil = doğru, Kırmızı = yanlış
+      fields: [
+        { name: "🕵️ Oyuncu", value: kullanici, inline: true },
+        { name: "📣 Soru", value: soru.soru, inline: false },
+        { name: "❓ Oyuncunun Cevabı", value: cevap ? "Gerçek ✅" : "Yalan ❌", inline: true },
+        { name: "✅ Doğru Cevap", value: soru.cevap ? "Gerçek ✅" : "Yalan ❌", inline: true },
+        { name: "🎯 Sonuç", value: dogruMu ? "✅ Doğru" : "❌ Yanlış", inline: true }
+      ],
+      footer: {
+        text: "Yalan mı Gerçek mi? Oyunu | Site Tabanlı"
+      },
+      timestamp: new Date().toISOString()
+    }
+  ]
+};
+
+
+      fetch(webhookURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(mesaj)
+      });
+
+      index++;
+      document.getElementById("score").innerText = `✅ Doğru: ${skor} / ${index}`;
+      yeniSoru();
+    }
+
+    rastgeleSorular();
+  </script>
+</body>
+</html>
